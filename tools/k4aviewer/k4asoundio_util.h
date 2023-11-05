@@ -16,7 +16,7 @@
 // This disables that behavior.
 //
 #define NOMINMAX
-#include <soundio.h>
+#include <soundio/soundio.h>
 
 // Project headers
 //
