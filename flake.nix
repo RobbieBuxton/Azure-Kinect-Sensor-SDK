@@ -11,11 +11,23 @@
       pkgs = nixpkgs.legacyPackages.${system};
     in
     {
-    packages.${system}.default = pkgs.stdenv.mkDerivation {
+    packages.${system}.default =
+    let 
+      azure-kinect-sensor-sdk = builtins.fetchGit {
+        url = "https://github.com/RobbieBuxton/Azure-Kinect-Sensor-SDK/";
+        rev = "eb1e6ddca3952774c07a2a5bfcb55e1241968bda";
+        submodules = true;
+      };  
+      depthengine = builtins.fetchurl {
+        url = https://packages.microsoft.com/ubuntu/18.04/prod/pool/main/libk/libk4a1.4/libk4a1.4_1.4.1_amd64.deb;
+        sha256 = "sha256:0ackdiakllmmvlnhpcmj2miix7i2znjyai3a2ck17v8ycj0kzin1";
+      };   
+    in 
+    pkgs.stdenv.mkDerivation {
       pname = "k4aviewer";
       version = "1.4.1";
 
-      src = ./.; 
+      src = azure-kinect-sensor-sdk; 
 
       #Stops cmake killing itself
       dontUseCmakeConfigure = true;
@@ -54,13 +66,7 @@
         libuuid
       ];
 
-      configurePhase =
-      let 
-        depthengine = builtins.fetchurl {
-          url = https://packages.microsoft.com/ubuntu/18.04/prod/pool/main/libk/libk4a1.4/libk4a1.4_1.4.1_amd64.deb;
-          sha256 = "sha256:0ackdiakllmmvlnhpcmj2miix7i2znjyai3a2ck17v8ycj0kzin1";
-        };
-      in ''
+      configurePhase = ''
         mkdir -p build/bin 
         dpkg -x ${depthengine} build/libdepthengine
         cp build/libdepthengine/usr/lib/x86_64-linux-gnu/libk4a1.4/libdepthengine.so.2.0 build/bin/
